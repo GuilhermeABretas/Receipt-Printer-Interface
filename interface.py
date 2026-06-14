@@ -37,51 +37,76 @@ class SistemaRecibo:
     def __init__(self, root):
         self.root = root
         self.root.title("MarySmoke - Sistema Final")
-        self.root.geometry("400x680") # Aumentei um pouco a altura para caber o novo campo
+        self.root.geometry("400x750")
+        self.root.configure(bg="#f4f6f9")
+        
+        style = ttk.Style()
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+            
+        # Estilo para Treeview
+        style.configure("Treeview", font=("Segoe UI", 9), rowheight=25)
+        style.configure("Treeview.Heading", font=("Segoe UI", 9, "bold"))
         
         self.itens_pedido = []
         
         # --- Interface ---
-        tk.Label(root, text="DADOS DO PEDIDO", font=("Arial", 10, "bold")).pack(pady=5)
+        tk.Label(root, text="DADOS DO PEDIDO", font=("Segoe UI", 11, "bold"), bg="#f4f6f9", fg="#2c3e50").pack(pady=10)
         
-        frame_datas = tk.Frame(root)
-        frame_datas.pack()
+        frame_datas = tk.Frame(root, bg="#f4f6f9")
+        frame_datas.pack(pady=5)
         
-        tk.Label(frame_datas, text="Data:").pack(side=tk.LEFT)
-        self.entry_data_rec = tk.Entry(frame_datas, width=12)
+        tk.Label(frame_datas, text="Data:", bg="#f4f6f9", font=("Segoe UI", 9)).pack(side=tk.LEFT)
+        self.entry_data_rec = ttk.Entry(frame_datas, width=12, font=("Segoe UI", 9))
         self.entry_data_rec.insert(0, datetime.now().strftime("%d/%m/%Y"))
         self.entry_data_rec.pack(side=tk.LEFT, padx=5)
 
-        tk.Label(frame_datas, text="Tipo:").pack(side=tk.LEFT)
+        tk.Label(frame_datas, text="Tipo:", bg="#f4f6f9", font=("Segoe UI", 9)).pack(side=tk.LEFT)
         self.var_modelo = tk.StringVar(value="À VISTA")
-        tk.OptionMenu(frame_datas, self.var_modelo, "À VISTA", "CONSIGNADO").pack(side=tk.LEFT)
+        ttk.Combobox(frame_datas, textvariable=self.var_modelo, values=["À VISTA", "CONSIGNADO"], width=12, state="readonly", font=("Segoe UI", 9)).pack(side=tk.LEFT)
 
         # --- NOVO CAMPO: RECEBEDOR ---
-        frame_recebedor = tk.Frame(root)
+        frame_recebedor = tk.Frame(root, bg="#f4f6f9")
         frame_recebedor.pack(pady=5)
-        tk.Label(frame_recebedor, text="Recebedor:").pack(side=tk.LEFT)
-        self.entry_recebedor = tk.Entry(frame_recebedor, width=26)
+        tk.Label(frame_recebedor, text="Recebedor:", bg="#f4f6f9", font=("Segoe UI", 9)).pack(side=tk.LEFT)
+        self.entry_recebedor = ttk.Entry(frame_recebedor, width=28, font=("Segoe UI", 9))
         self.entry_recebedor.pack(side=tk.LEFT, padx=5)
 
         self.sep = ttk.Separator(root, orient='horizontal')
-        self.sep.pack(fill='x', pady=10)
+        self.sep.pack(fill='x', pady=15, padx=20)
 
         # Adicionar Produtos
-        tk.Label(root, text="INCLUIR PRODUTOS", font=("Arial", 10, "bold")).pack()
+        tk.Label(root, text="INCLUIR PRODUTOS", font=("Segoe UI", 11, "bold"), bg="#f4f6f9", fg="#2c3e50").pack(pady=5)
         
-        frame_add = tk.Frame(root)
+        frame_add = tk.Frame(root, bg="#f4f6f9")
         frame_add.pack(pady=5)
         
-        tk.Label(frame_add, text="Item:").grid(row=0, column=0)
-        self.entry_prod = tk.Entry(frame_add, width=20)
-        self.entry_prod.grid(row=0, column=1)
+        tk.Label(frame_add, text="Item:", bg="#f4f6f9", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="e", pady=2)
+        self.entry_prod = ttk.Combobox(frame_add, width=18, values=["Tabaco Trad.", "Tabaco Mentol"], font=("Segoe UI", 9))
+        self.entry_prod.grid(row=0, column=1, pady=2, padx=5)
 
-        tk.Label(frame_add, text="Qtd:").grid(row=1, column=0)
-        self.entry_qtd = tk.Entry(frame_add, width=20)
-        self.entry_qtd.grid(row=1, column=1)
+        tk.Label(frame_add, text="Qtd:", bg="#f4f6f9", font=("Segoe UI", 9)).grid(row=1, column=0, sticky="e", pady=2)
+        self.entry_qtd = ttk.Entry(frame_add, width=20, font=("Segoe UI", 9))
+        self.entry_qtd.grid(row=1, column=1, pady=2, padx=5)
         
-        btn_add = tk.Button(root, text="Adicionar (+)", command=self.adicionar_item, bg="#3498db", fg="white")
-        btn_add.pack(pady=5)
+        tk.Label(frame_add, text="Valor (R$):", bg="#f4f6f9", font=("Segoe UI", 9)).grid(row=2, column=0, sticky="e", pady=2)
+        self.entry_valor = ttk.Entry(frame_add, width=20, font=("Segoe UI", 9))
+        self.entry_valor.insert(0, "50")
+        self.entry_valor.grid(row=2, column=1, pady=2, padx=5)
+        
+        frame_botoes = tk.Frame(root, bg="#f4f6f9")
+        frame_botoes.pack(pady=10)
+
+        btn_style = {"font": ("Segoe UI", 9, "bold"), "fg": "white", "relief": "flat", "cursor": "hand2", "pady": 4, "padx": 8}
+
+        btn_add = tk.Button(frame_botoes, text="Adicionar (+)", command=self.adicionar_item, bg="#3498db", **btn_style)
+        btn_add.grid(row=0, column=0, padx=4)
+
+        btn_rem = tk.Button(frame_botoes, text="Remover (-)", command=self.remover_item, bg="#e74c3c", **btn_style)
+        btn_rem.grid(row=0, column=1, padx=4)
+
+        btn_limpar = tk.Button(frame_botoes, text="Limpar Pedido", command=self.limpar_pedido, bg="#f39c12", **btn_style)
+        btn_limpar.grid(row=0, column=2, padx=4)
 
         # Lista Visual
         columns = ("Prod", "Qtd", "Subtotal")
@@ -90,32 +115,34 @@ class SistemaRecibo:
         self.tree.heading("Qtd", text="Qtd")
         self.tree.heading("Subtotal", text="R$")
         
-        self.tree.column("Prod", width=180)
+        self.tree.column("Prod", width=200)
         self.tree.column("Qtd", width=50, anchor="center")
         self.tree.column("Subtotal", width=80, anchor="center")
-        self.tree.pack(pady=5, padx=10)
+        self.tree.pack(pady=5, padx=20, fill="x")
 
         # Total
-        self.label_total = tk.Label(root, text="TOTAL: R$ 0,00", font=("Arial", 14, "bold"), fg="#27ae60")
+        self.label_total = tk.Label(root, text="TOTAL: R$ 0,00", font=("Segoe UI", 16, "bold"), bg="#f4f6f9", fg="#27ae60")
         self.label_total.pack(pady=10)
 
-        btn_gerar = tk.Button(root, text="IMPRIMIR RECIBO (NEGRITO)", command=self.gerar_pdf, 
-                             bg="#222", fg="white", font=("Arial", 11, "bold"), height=2)
+        btn_gerar = tk.Button(root, text="IMPRIMIR RECIBO", command=self.gerar_pdf, 
+                             bg="#2c3e50", fg="white", font=("Segoe UI", 11, "bold"), height=2, relief="flat", cursor="hand2")
         btn_gerar.pack(pady=5, fill="x", padx=20)
         
-        tk.Label(root, text="* A imagem deve se chamar 'logo.jpg' ou 'logo.png'", font=("Arial", 8), fg="gray").pack()
+        tk.Label(root, text="* A imagem deve se chamar 'logo.jpg' ou 'logo.png'", font=("Segoe UI", 8), bg="#f4f6f9", fg="#7f8c8d").pack(pady=5)
 
     def adicionar_item(self):
         prod = self.entry_prod.get()
         qtd_str = self.entry_qtd.get()
+        valor_str = self.entry_valor.get()
         
-        if not prod or not qtd_str:
-            messagebox.showwarning("Atenção", "Preencha item e quantidade!")
+        if not prod or not qtd_str or not valor_str:
+            messagebox.showwarning("Atenção", "Preencha item, quantidade e valor!")
             return
         
         try:
             qtd = int(qtd_str)
-            subtotal = qtd * 50 # Seu valor atualizado
+            valor_unitario = float(valor_str.replace(',', '.'))
+            subtotal = qtd * valor_unitario
             self.itens_pedido.append({"prod": prod, "qtd": qtd, "subtotal": subtotal})
             self.tree.insert("", "end", values=(prod, qtd, f"{subtotal:.2f}"))
             
@@ -124,7 +151,34 @@ class SistemaRecibo:
             self.entry_prod.focus()
             self.atualizar_total_label()
         except ValueError:
-            messagebox.showerror("Erro", "Quantidade inválida")
+            messagebox.showerror("Erro", "Quantidade ou valor inválido")
+
+    def remover_item(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Atenção", "Selecione um item na lista para remover!")
+            return
+        
+        # Como iteramos e removemos pelo index, o tree.index muda se apagarmos vários
+        # então o mais seguro é pegar os indices, ordenar descendentemente e remover
+        indices = [self.tree.index(item) for item in selected]
+        indices.sort(reverse=True)
+        
+        for item in selected:
+            self.tree.delete(item)
+            
+        for idx in indices:
+            self.itens_pedido.pop(idx)
+            
+        self.atualizar_total_label()
+
+    def limpar_pedido(self):
+        if messagebox.askyesno("Confirmar", "Deseja limpar todos os itens e iniciar um novo pedido?"):
+            self.itens_pedido.clear()
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+            self.atualizar_total_label()
+            self.entry_prod.focus()
 
     def atualizar_total_label(self):
         total = sum(item["subtotal"] for item in self.itens_pedido)
@@ -142,8 +196,8 @@ class SistemaRecibo:
         # 58mm x 200mm
         pdf = ReciboPDF(orientation='P', unit='mm', format=(58, 200))
         
-        # Margens laterais de 6mm
-        pdf.set_margins(left=6, top=5, right=6)
+        # Margens laterais de 5mm para dar mais espaço
+        pdf.set_margins(left=5, top=5, right=5)
         
         pdf.add_page()
         
@@ -160,9 +214,9 @@ class SistemaRecibo:
 
         # --- CABEÇALHO TABELA (NEGRITO) ---
         pdf.set_font('Courier', 'B', 9)
-        pdf.cell(24, 4, 'ITEM', 0)
-        pdf.cell(8, 4, 'QTD', 0, align='C')
-        pdf.cell(14, 4, 'TOTAL', 0, align='R', ln=True)
+        pdf.cell(30, 4, 'ITEM', 0)
+        pdf.cell(6, 4, 'QTD', 0, align='C')
+        pdf.cell(12, 4, 'TOTAL', 0, align='R', ln=True)
 
         # --- LOOP DE ITENS (NEGRITO) ---
         pdf.set_font('Courier', 'B', 8) 
@@ -171,13 +225,13 @@ class SistemaRecibo:
         for item in self.itens_pedido:
             y_inicial = pdf.get_y()
             
-            pdf.multi_cell(24, 4, item["prod"])
+            pdf.multi_cell(30, 4, item["prod"])
             y_final = pdf.get_y()
             
-            pdf.set_xy(6 + 24, y_inicial)
+            pdf.set_xy(5 + 30, y_inicial)
             
-            pdf.cell(8, 4, str(item["qtd"]), align='C')
-            pdf.cell(14, 4, f'{item["subtotal"]:.0f}', align='R', ln=True)
+            pdf.cell(6, 4, str(item["qtd"]), align='C')
+            pdf.cell(12, 4, f'{item["subtotal"]:.0f}', align='R', ln=True)
             
             if y_final > pdf.get_y():
                 pdf.set_y(y_final)
